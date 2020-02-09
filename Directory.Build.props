@@ -7,6 +7,7 @@
     <Authors>YiGolden</Authors>
     <Copyright>Copyright (c) 2020 yigolden</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageDescription>A simple library providing reusable MemoryStream implementation and IBufferWriter&lt;byte&gt; implementation. It is suitable for storing temporary byte stream.</PackageDescription>
     <PackageProjectUrl>https://github.com/yigolden/PooledGrowableBufferHelper</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/yigolden/PooledGrowableBufferHelper.git</RepositoryUrl>
