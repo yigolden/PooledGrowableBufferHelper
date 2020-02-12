@@ -64,16 +64,16 @@ using (PooledMemoryStream ms = PooledMemoryStreamManager.Shared.GetStream())
 
     ReadOnlySequence<byte> sequence = ms.ToReadOnlySequence();
 
-    // Dont't mutate the content when working with ReadOnlySequence<byte>
+    // Don't mutate the content when working with ReadOnlySequence<byte>
 }
 ```
 
-### Use as MemoryStream&lt;byte>
-If you have a function that accept MemoryStream&lt;byte> instad of Stream&lt;byte>, you can call AsMemoryStream to acquire a MemoryStream wrapper of the original stream.
+### Use as MemoryStream
+If you have a function that accept MemoryStream instad of Stream, you can call AsMemoryStream to acquire a MemoryStream wrapper of the original stream.
 ```csharp
 using (PooledMemoryStream ms = PooledMemoryStreamManager.Shared.GetStream())
 {
-    MemoryStream s = ms.AdMemoryStream(leaveOpen: true);
+    MemoryStream s = ms.AsMemoryStream(leaveOpen: true);
 
     SomeFunction(s);
 }
