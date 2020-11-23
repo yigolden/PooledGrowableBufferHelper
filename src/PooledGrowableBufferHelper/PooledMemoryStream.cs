@@ -648,6 +648,8 @@ namespace PooledGrowableBufferHelper
 
         #region IBufferWriter Implementation
 
+        private const int DefaultBufferSize = 16384;
+
         /// <summary>
         /// Returns a <see cref="Memory{Byte}"/> to write to that is at least the requested size (specified by sizeHint).
         /// </summary>
@@ -658,6 +660,11 @@ namespace PooledGrowableBufferHelper
             if (_position != _length)
             {
                 throw new InvalidOperationException("IBufferWriter implementation is only usable when position is at the end of the stream.");
+            }
+
+            if (sizeHint <= 0)
+            {
+                sizeHint = DefaultBufferSize;
             }
 
             BufferSegment current = EnsureCurrentInitialized(sizeHint);
@@ -683,6 +690,11 @@ namespace PooledGrowableBufferHelper
             if (_position != _length)
             {
                 throw new InvalidOperationException("IBufferWriter implementation is only usable when position is at the end of the stream.");
+            }
+
+            if (sizeHint <= 0)
+            {
+                sizeHint = DefaultBufferSize;
             }
 
             BufferSegment current = EnsureCurrentInitialized(sizeHint);
