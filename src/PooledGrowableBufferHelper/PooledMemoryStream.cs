@@ -80,7 +80,7 @@ namespace PooledGrowableBufferHelper
                 return current;
             }
 
-            Debug.Assert(!(_current is null));
+            Debug.Assert(_current is not null);
             return _current!;
         }
 
@@ -123,7 +123,7 @@ namespace PooledGrowableBufferHelper
 
             BufferSegment? last = _head;
             BufferSegment? current = _head;
-            while (!(current is null) && current.RunningIndex < offset)
+            while (current is not null && current.RunningIndex < offset)
             {
                 last = current;
                 current = current.Next;
@@ -150,7 +150,7 @@ namespace PooledGrowableBufferHelper
             }
             if (buffer.Length - offset < count)
             {
-                throw new ArgumentException();
+                throw new ArgumentOutOfRangeException(nameof(count));
             }
         }
 
@@ -163,7 +163,7 @@ namespace PooledGrowableBufferHelper
         public override void Write(byte[] buffer, int offset, int count)
         {
             CheckParameters(buffer, offset, count);
-            Debug.Assert(!(buffer is null));
+            Debug.Assert(buffer is not null);
 
             BufferSegment current = EnsureCurrentInitialized(count);
 
@@ -226,7 +226,7 @@ namespace PooledGrowableBufferHelper
         public override int Read(byte[] buffer, int offset, int count)
         {
             CheckParameters(buffer, offset, count);
-            Debug.Assert(!(buffer is null));
+            Debug.Assert(buffer is not null);
 
             BufferSegment? current = _current;
             if (current is null)
@@ -392,14 +392,18 @@ namespace PooledGrowableBufferHelper
             long position = _position;
 
             // Copy until we reached the last BufferSegment
-            while (!(current is null))
+            while (current is not null)
             {
                 // Calculate the data offset in this segment. 
                 int offset = (int)(position - current.RunningIndex);
                 int count = current.Length - offset;
 
                 // Write to the destination stream.
+#if FAST_SPAN
+                await destination.WriteAsync(current.Array.AsMemory(offset, count), cancellationToken).ConfigureAwait(false);
+#else
                 await destination.WriteAsync(current.Array, offset, count, cancellationToken).ConfigureAwait(false);
+#endif
 
                 // Move forward.
                 position += count;
@@ -435,7 +439,7 @@ namespace PooledGrowableBufferHelper
             }
 
             // Copy until we reached the last BufferSegment
-            while (!(current is null))
+            while (current is not null)
             {
                 // Calculate the data offset in this segment. 
                 int offset = (int)(position - current.RunningIndex);
@@ -514,7 +518,7 @@ namespace PooledGrowableBufferHelper
             }
 
             BufferSegment next;
-            while (!(head is null))
+            while (head is not null)
             {
                 next = head.Next;
                 _manager.Free(head);
@@ -646,7 +650,7 @@ namespace PooledGrowableBufferHelper
 
 #endif
 
-        #region IBufferWriter Implementation
+#region IBufferWriter Implementation
 
         private const int DefaultBufferSize = 16384;
 
@@ -729,7 +733,7 @@ namespace PooledGrowableBufferHelper
 
             if (current.Available < count)
             {
-                throw new ArgumentException();
+                throw new ArgumentOutOfRangeException(nameof(count));
             }
 
             current.Length += count;
@@ -749,11 +753,11 @@ namespace PooledGrowableBufferHelper
                 return ReadOnlySequence<byte>.Empty;
             }
 
-            Debug.Assert(!(_current is null));
+            Debug.Assert(_current is not null);
             BufferSegment current = _current!;
             int endIndex;
 
-            while (!(current.Next is null))
+            while (current.Next is not null)
             {
                 current = current.Next;
             }
@@ -761,9 +765,9 @@ namespace PooledGrowableBufferHelper
 
             return new ReadOnlySequence<byte>(head, 0, current, endIndex);
         }
-        #endregion
+#endregion
 
-        #region MemoryStream Adapter
+#region MemoryStream Adapter
 
         internal class MemoryStreamAdapter : MemoryStream
         {
@@ -852,6 +856,6 @@ namespace PooledGrowableBufferHelper
 #endif
         }
 
-        #endregion
+#endregion
     }
 }

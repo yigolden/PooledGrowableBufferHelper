@@ -25,7 +25,9 @@ namespace PooledGrowableBufferHelper
         /// <summary>
         /// Gets the array this node is using.
         /// </summary>
+#pragma warning disable CA1819 // Properties should not return arrays
         public byte[] Array => _array ?? throw new InvalidOperationException();
+#pragma warning restore CA1819 // Properties should not return arrays
 
         /// <summary>
         /// Gets the available space in the buffer.
@@ -67,7 +69,7 @@ namespace PooledGrowableBufferHelper
             long runningIndex = RunningIndex;
             BufferSegment current = this;
 
-            while (!(next is null))
+            while (next is not null)
             {
                 runningIndex += current._end;
                 next.RunningIndex = runningIndex;

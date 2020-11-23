@@ -3,6 +3,7 @@
   <PropertyGroup Label="Package Versions">
     <SystemBuffersPackageVersion>4.5.1</SystemBuffersPackageVersion>
     <SystemMemoryPackageVersion>4.5.4</SystemMemoryPackageVersion>
+    <MicrosoftCodeAnalysisFxCopAnalyzersPackageVersion>3.3.1</MicrosoftCodeAnalysisFxCopAnalyzersPackageVersion>
     <MicrosoftNETFrameworkReferenceAssembliesPackageVersion>1.0.0</MicrosoftNETFrameworkReferenceAssembliesPackageVersion>
     <MicrosoftSourceLinkGitHubPackageVersion>1.0.0</MicrosoftSourceLinkGitHubPackageVersion>
   </PropertyGroup>
