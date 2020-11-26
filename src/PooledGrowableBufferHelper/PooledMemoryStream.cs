@@ -760,15 +760,18 @@ namespace PooledGrowableBufferHelper
                 return ReadOnlySequence<byte>.Empty;
             }
 
-            Debug.Assert(_current is not null);
-            BufferSegment current = _current!;
+            BufferSegment current = _head!;
             int endIndex;
-
-            while (current.Next is not null)
+            while (true)
             {
+                current.UpdateMemory();
+                if (current.Next is null)
+                {
+                    endIndex = current.Length;
+                    break;
+                }
                 current = current.Next;
             }
-            endIndex = current.Length;
 
             return new ReadOnlySequence<byte>(head, 0, current, endIndex);
         }

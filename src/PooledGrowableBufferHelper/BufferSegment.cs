@@ -58,6 +58,19 @@ namespace PooledGrowableBufferHelper
             RunningIndex = runningIndex;
         }
 
+        internal void UpdateMemory()
+        {
+            byte[]? array = _array;
+            if (array is null)
+            {
+                Memory = default;
+            }
+            else
+            {
+                Memory = array.AsMemory(0, _end);
+            }
+        }
+
         /// <summary>
         /// Sets the next node.
         /// </summary>
