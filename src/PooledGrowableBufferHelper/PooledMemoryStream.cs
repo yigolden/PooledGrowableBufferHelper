@@ -176,7 +176,7 @@ namespace PooledGrowableBufferHelper
                 int writeCount = Math.Min(segmentAvailable, count);
 
                 // There are existing data in the current segment, override them
-                if (writeCount > 0)
+                if (writeCount != 0)
                 {
                     Buffer.BlockCopy(buffer, offset, current.Array, segmentOffset, writeCount);
                     _position += writeCount;
@@ -194,7 +194,6 @@ namespace PooledGrowableBufferHelper
                 // If we write to the remaining space regardless, we may break the ReadOnleSequence implementation.
                 if (segmentAvailable > 0 && current.Next is null)
                 {
-                    segmentOffset += writeCount;
                     writeCount = Math.Min(segmentAvailable, count);
 
                     // Copy the data into the segment
@@ -601,7 +600,7 @@ namespace PooledGrowableBufferHelper
                 int segmentAvailable = current.Length - segmentOffset;
                 int writeCount = Math.Min(segmentAvailable, count);
 
-                if (writeCount > 0)
+                if (writeCount != 0)
                 {
                     buffer.Slice(0, writeCount).CopyTo(current.Array.AsSpan(segmentOffset, writeCount));
                     _position += writeCount;
@@ -618,7 +617,6 @@ namespace PooledGrowableBufferHelper
                 segmentAvailable = current.Available;
                 if (segmentAvailable > 0 && current.Next is null)
                 {
-                    segmentOffset += writeCount;
                     writeCount = Math.Min(segmentAvailable, count);
 
                     buffer.Slice(0, writeCount).CopyTo(current.Array.AsSpan(segmentOffset, writeCount));
