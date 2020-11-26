@@ -122,7 +122,16 @@ namespace PooledGrowableBufferHelper
             }
 
             BufferSegment? last = _head;
-            BufferSegment? current = _head;
+            BufferSegment? current = _current;
+            if (current is not null && offset > current.RunningIndex)
+            {
+                last = current;
+            }
+            else
+            {
+                current = last;
+            }
+
             while (current is not null && current.RunningIndex < offset)
             {
                 last = current;
@@ -648,7 +657,7 @@ namespace PooledGrowableBufferHelper
 
 #endif
 
-#region IBufferWriter Implementation
+        #region IBufferWriter Implementation
 
         private const int DefaultBufferSize = 16384;
 
@@ -763,9 +772,9 @@ namespace PooledGrowableBufferHelper
 
             return new ReadOnlySequence<byte>(head, 0, current, endIndex);
         }
-#endregion
+        #endregion
 
-#region MemoryStream Adapter
+        #region MemoryStream Adapter
 
         internal class MemoryStreamAdapter : MemoryStream
         {
@@ -854,6 +863,6 @@ namespace PooledGrowableBufferHelper
 #endif
         }
 
-#endregion
+        #endregion
     }
 }
