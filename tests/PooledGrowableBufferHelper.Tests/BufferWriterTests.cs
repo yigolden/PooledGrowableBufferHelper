@@ -23,5 +23,25 @@ namespace PooledGrowableBufferHelper.Tests
 
             Assert.Equal(bytes + buffer.Length, stream.Length);
         }
+
+        [Fact]
+        public void TestCapacity()
+        {
+            var manager = new NonePooledMemoryStreamManager(new PooledMemoryStreamOptions() { MinimumSegmentSize = 16 });
+
+            PooledMemoryStream stream = manager.GetStream();
+            var writer = (IBufferWriter<byte>)stream;
+            writer.GetSpan(15);
+            writer.Advance(15);
+            Assert.Equal(16, stream.Capacity);
+
+            writer.GetSpan(15);
+            writer.Advance(15);
+            Assert.Equal(31, stream.Capacity);
+
+            writer.GetSpan(15);
+            writer.Advance(15);
+            Assert.Equal(46, stream.Capacity);
+        }
     }
 }

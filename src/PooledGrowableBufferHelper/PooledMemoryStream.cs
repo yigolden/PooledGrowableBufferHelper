@@ -309,7 +309,112 @@ namespace PooledGrowableBufferHelper
         /// <param name="value">The value at which to set the length.</param>
         public override void SetLength(long value)
         {
-            throw new NotSupportedException();
+            if (value < 0 || value > int.MaxValue)
+            {
+                throw new ArgumentOutOfRangeException(nameof(value));
+            }
+
+            if (value == 0)
+            {
+                Reset();
+                return;
+            }
+
+            BufferSegment? head = _head;
+            if (head is null)
+            {
+                // This instance is never used. We can just initialize the head.
+                int value32 = (int)value;
+                _head = _current = head = EnsureCurrentInitialized(value32);
+                head.Length = value32;
+                head.Array.AsSpan(0, value32).Clear();
+                _length = value32;
+                _position = 0;
+                return;
+            }
+
+            if (value == _length)
+            {
+                return;
+            }
+
+            BufferSegment? current;
+            if (value < _length)
+            {
+                // We should trim the buffer
+                long capacity = 0;
+                while (true)
+                {
+                    if (value <= head.RunningIndex + head.Length)
+                    {
+                        head.Length = (int)(value - head.RunningIndex);
+                        capacity += head.Capacity;
+                        break;
+                    }
+                    capacity += head.Length;
+                    head = head.Next;
+                }
+
+                current = head.Next;
+                head.SetNext(null);
+                while (current is not null)
+                {
+                    BufferSegment temp = current;
+                    current = temp.Next;
+                    temp.SetNext(null);
+                    _manager.Free(temp);
+                }
+
+                _length = value;
+                _capacity = capacity;
+                if (_position > value)
+                {
+                    _position = value;
+                    _current = head;
+                }
+                return;
+            }
+
+            // We should expand the buffer
+            head = _current!;
+            while (head.Next is not null)
+            {
+                head = head.Next;
+            }
+
+            int expandSize = (int)(value - head.RunningIndex - head.Length);
+            int available = head.Available;
+            Debug.Assert(expandSize > 0);
+
+            if (expandSize <= available)
+            {
+                head.Array.AsSpan(head.Length, expandSize).Clear();
+                head.Length += expandSize;
+                _length = value;
+                return;
+            }
+
+            head.Array.AsSpan(head.Length, available).Clear();
+            head.Length = head.Capacity;
+            _length += available;
+            expandSize -= available;
+
+            current = _current!;
+            AllocateAndAppendSegment(head, expandSize);
+            _current = current;
+
+            head = head.Next!;
+            while (head is not null)
+            {
+                byte[] array = head.Array;
+                int size = Math.Min(array.Length, expandSize);
+                array.AsSpan(0, size).Clear();
+                head.Length = size;
+                expandSize -= size;
+                head = head.Next;
+            }
+
+            _length = value;
         }
 
         /// <summary>
@@ -508,9 +613,14 @@ namespace PooledGrowableBufferHelper
         }
 
         /// <summary>
-        /// Closes the stream for reading and writing. Although no error will be thrown, you should now use this object any more.
+        /// Closes the stream for reading and writing. Although no error will be thrown, you should not use this object any more.
         /// </summary>
         public override void Close()
+        {
+            Reset();
+        }
+
+        private void Reset()
         {
             BufferSegment? head = _head;
 
