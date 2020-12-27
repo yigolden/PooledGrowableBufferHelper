@@ -325,10 +325,23 @@ namespace PooledGrowableBufferHelper
             {
                 // This instance is never used. We can just initialize the head.
                 int value32 = (int)value;
-                _head = _current = head = EnsureCurrentInitialized(value32);
-                head.Length = value32;
-                head.Array.AsSpan(0, value32).Clear();
-                _length = value32;
+                head = EnsureCurrentInitialized(value32);
+
+                int currentLength = Math.Min(value32, head.Capacity);
+                head.Length = currentLength;
+                head.Array.AsSpan(0, currentLength).Clear();
+                value32 -= currentLength;
+
+                while (value32 > 0)
+                {
+                    head = AllocateAndAppendSegment(head, value32);
+                    currentLength = Math.Min(value32, head.Capacity);
+                    head.Length = currentLength;
+                    head.Array.AsSpan(0, currentLength).Clear();
+                    value32 -= currentLength;
+                }
+
+                _length = value;
                 _position = 0;
                 return;
             }
@@ -400,20 +413,17 @@ namespace PooledGrowableBufferHelper
             expandSize -= available;
 
             current = _current!;
-            AllocateAndAppendSegment(head, expandSize);
-            _current = current;
-
-            head = head.Next!;
-            while (head is not null)
+            while (expandSize > 0)
             {
+                head = AllocateAndAppendSegment(head, expandSize);
                 byte[] array = head.Array;
                 int size = Math.Min(array.Length, expandSize);
                 array.AsSpan(0, size).Clear();
                 head.Length = size;
                 expandSize -= size;
-                head = head.Next;
             }
 
+            _current = current;
             _length = value;
         }
 

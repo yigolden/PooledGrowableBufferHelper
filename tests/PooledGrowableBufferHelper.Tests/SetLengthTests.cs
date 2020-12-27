@@ -132,5 +132,32 @@ namespace PooledGrowableBufferHelper.Tests
 
             Assert.True(buffer2.AsSpan(0, 12).SequenceEqual(buffer.AsSpan(0, 12)));
         }
+
+        [Fact]
+        public void ExpandUsingSmallSourceOnEmptyInstance()
+        {
+            var manager = new NonePooledMemoryStreamManager(new PooledMemoryStreamOptions() { MinimumSegmentSize = 16, MaximumSegmentSize = 16 });
+
+            PooledMemoryStream stream = manager.GetStream();
+            stream.SetLength(32);
+
+            Assert.Equal(32, stream.Length);
+            Assert.Equal(0, stream.Position);
+            Assert.Equal(32, stream.Capacity);
+        }
+
+        [Fact]
+        public void ExpandUsingSmallSource()
+        {
+            var manager = new NonePooledMemoryStreamManager(new PooledMemoryStreamOptions() { MinimumSegmentSize = 16, MaximumSegmentSize = 16 });
+
+            PooledMemoryStream stream = manager.GetStream();
+            stream.Write(new byte[10]);
+            stream.SetLength(48);
+
+            Assert.Equal(48, stream.Length);
+            Assert.Equal(10, stream.Position);
+            Assert.Equal(48, stream.Capacity);
+        }
     }
 }
