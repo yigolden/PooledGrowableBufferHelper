@@ -13,7 +13,7 @@ namespace PooledGrowableBufferHelper.Tests
 
             var expectedBytes = new ReadOnlySpan<byte>(arraySegment.Array, arraySegment.Offset, arraySegment.Count);
 
-            var actrualBytes = new byte[expected.Length];
+            byte[] actrualBytes = new byte[expected.Length];
             actual.Seek(0, SeekOrigin.Begin);
             Assert.Equal(expected.Length, actual.Read(actrualBytes, 0, (int)expected.Length));
 

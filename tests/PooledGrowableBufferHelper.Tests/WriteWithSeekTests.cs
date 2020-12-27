@@ -15,7 +15,7 @@ namespace PooledGrowableBufferHelper.Tests
             var manager = new NonePooledMemoryStreamManager(new PooledMemoryStreamOptions() { MinimumSegmentSize = 16 });
 
             var ms = new MemoryStream();
-            var stream = manager.GetStream();
+            PooledMemoryStream stream = manager.GetStream();
 
             var writeStream = new BroadcastWriteStream(ms, stream);
 
@@ -29,7 +29,7 @@ namespace PooledGrowableBufferHelper.Tests
             {
                 writeStream.Write(buffer, 0, 8);
             }
-            
+
             buffer.AsSpan().Fill(2);
             if (useSpan)
             {
